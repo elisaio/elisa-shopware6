@@ -1,0 +1,7 @@
+{
+    "elisa-integration": {
+        "load-cart": {
+            "error": "Der Warenkorb konnte nicht vom Live-Shopping geladen werden"
+        }
+    }
+}

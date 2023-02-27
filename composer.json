@@ -1,0 +1,46 @@
+{
+    "name": "elisa/live-shopping-integration",
+    "description": "Integration between Elisa Live Shopping and Shopware",
+    "type": "shopware-platform-plugin",
+    "license": "proprietary",
+    "version": "1.0.1",
+    "authors": [
+        {
+            "name": "Easy Live Sales ApS",
+            "homepage": "https://www.elisa.io/"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Elisa\\LiveShoppingIntegration\\": "src/"
+        }
+    },
+    "require": {
+        "shopware/core": "*"
+    },
+    "extra": {
+        "shopware-plugin-class": "Elisa\\LiveShoppingIntegration\\ElisaLiveShoppingIntegration",
+        "plugin-icon": "src/Resources/config/plugin.png",
+        "copyright": "(c) by Easy Live Sales ApS",
+        "label": {
+            "da-DK": "Elisa Live Shopping",
+            "en-GB": "Elisa Live Shopping",
+            "de-DE": "Elisa Live Shopping"
+        },
+        "description": {
+            "da-DK": "Integration between Elisa Live Shopping and Shopware",
+            "en-GB": "Integration between Elisa Live Shopping and Shopware",
+            "de-DE": "Integration between Elisa Live Shopping and Shopware"
+        },
+        "manufacturerLink": {
+            "dk-DK": "https://www.elisa.io/",
+            "en-GB": "https://www.elisa.io/",
+            "de-DE": "https://www.elisa.io/"
+        },
+        "supportLink": {
+            "da-DK": "https://help.elisa.io/",
+            "en-GB": "https://help.elisa.io/",
+            "de-DE": "https://help.elisa.io/"
+        }
+    }
+}

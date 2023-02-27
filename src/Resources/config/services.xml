@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Controllers -->
+        <service id="Elisa\LiveShoppingIntegration\Controllers\ElisaCartController" public="true">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
+            <argument type="service" id="Elisa\LiveShoppingIntegration\Services\ElisaCartService" />
+            <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister" />
+            <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
+            <argument type="service" id="logger" />
+            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister" />
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+            <tag name="controller.service_arguments"/>
+        </service>
+
+        <!-- Services -->
+        <service id="Elisa\LiveShoppingIntegration\Services\AbstractApiService" class="Elisa\LiveShoppingIntegration\Services\AbstractApiService" abstract="true">
+            <argument type="service" id="monolog.logger" />
+        </service>
+        <service id="Elisa\LiveShoppingIntegration\Services\ElisaCartService">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
+            <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister" />
+            <argument type="service" id="Doctrine\DBAL\Connection" />
+            <argument type="service" id="Shopware\Core\Content\Product\Cart\ProductLineItemFactory" />
+            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister" />
+        </service>
+        <service id="Elisa\LiveShoppingIntegration\Services\ElisaOrderService" parent="Elisa\LiveShoppingIntegration\Services\AbstractApiService">
+        </service>
+
+        <!-- Subscribers -->
+        <service id="Elisa\LiveShoppingIntegration\Subscribers\ElisaOrderSubscriber">
+            <tag name="kernel.event_subscriber" />
+            <argument type="service" id="Elisa\LiveShoppingIntegration\Services\ElisaOrderService" />
+            <argument type="service" id="messenger.bus.shopware" />
+        </service>
+        <service id="Elisa\LiveShoppingIntegration\Subscribers\ElisaCartSubscriber">
+            <tag name="kernel.event_subscriber" />
+            <argument type="service" id="Elisa\LiveShoppingIntegration\Services\ElisaCartService" />
+            <argument type="service" id="monolog.logger" />
+            <argument type="service" id="messenger.bus.shopware"/>
+        </service>
+    </services>
+</container>
