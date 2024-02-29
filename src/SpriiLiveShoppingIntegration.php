@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Elisa\LiveShoppingIntegration;
+namespace Sprii\LiveShoppingIntegration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -12,13 +12,13 @@ use Shopware\Core\System\CustomField\CustomFieldTypes;
 
 /**
  * Class LiveShoppingIntegration
- * @package Elisa\LiveShoppingIntegration
+ * @package Sprii\LiveShoppingIntegration
  */
-class ElisaLiveShoppingIntegration extends Plugin
+class SpriiLiveShoppingIntegration extends Plugin
 {
-    const ELISA_CART_REFERENCE_ID = "ref_id";
-    const ELISA_CART_LINEITEM = "elisa_lineitem";
-    const ELISA_SET_PRICE = "elisa_set_price";
+    const SPRII_CART_REFERENCE_ID = "ref_id";
+    const SPRII_CART_LINEITEM = "sprii_lineitem";
+    const SPRII_SET_PRICE = "sprii_set_price";
 
     public function install(InstallContext $installContext): void
     {
@@ -28,16 +28,16 @@ class ElisaLiveShoppingIntegration extends Plugin
 
         $customFieldSetRepository->upsert([
             [
-                'name' => 'elisa_order_fields',
+                'name' => 'sprii_order_fields',
                 'customFields' => [
                     [
-                        'name' => ElisaLiveShoppingIntegration::ELISA_CART_REFERENCE_ID,
+                        'name' => SpriiLiveShoppingIntegration::SPRII_CART_REFERENCE_ID,
                         'type' => CustomFieldTypes::TEXT,
                         'config' => [
                             'label' => [
-                                'da-DK' => 'Elisa Kurv ID',
-                                'de-DE' => 'Elisa Warenkorb ID',
-                                'en-GB' => 'Elisa Cart ID'
+                                'da-DK' => 'Sprii Kurv ID',
+                                'de-DE' => 'Sprii Warenkorb ID',
+                                'en-GB' => 'Sprii Cart ID'
                             ],
                             'customFieldType' => 'text',
                             'customFieldPosition' => 1,
@@ -46,9 +46,9 @@ class ElisaLiveShoppingIntegration extends Plugin
                 ],
                 'config' => [
                     'label' => [
-                        'da-DK' => 'Elisa Live Shopping',
-                        'de-DE' => 'Elisa Live Shopping',
-                        'en-GB' => 'Elisa Live Shopping'
+                        'da-DK' => 'Sprii Live Shopping',
+                        'de-DE' => 'Sprii Live Shopping',
+                        'en-GB' => 'Sprii Live Shopping'
                     ]
                 ],
                 'relations' => [
@@ -72,7 +72,7 @@ class ElisaLiveShoppingIntegration extends Plugin
 
         $criteria = new Criteria();
         $criteria->addFilter(
-            new EqualsFilter('custom_field_set.name', ElisaLiveShoppingIntegration::ELISA_CART_REFERENCE_ID)
+            new EqualsFilter('custom_field_set.name', SpriiLiveShoppingIntegration::SPRII_CART_REFERENCE_ID)
         );
 
         $customFields = $customFieldSetRepository->search($criteria, $uninstallContext->getContext());

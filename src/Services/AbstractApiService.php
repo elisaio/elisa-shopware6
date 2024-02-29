@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Elisa\LiveShoppingIntegration\Services;
+namespace Sprii\LiveShoppingIntegration\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -12,7 +12,7 @@ abstract class AbstractApiService
 {
     protected Client $client;
     protected Logger $logger;
-    protected string $apiBaseUri = 'https://app.elisa.io/functions/shopware';
+    protected string $apiBaseUri = 'https://app.sprii.io/functions/shopware';
 
     public function __construct(Logger $logger)
     {

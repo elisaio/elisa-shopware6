@@ -1,5 +1,5 @@
 {
-    "elisa-integration": {
+    "sprii-integration": {
         "load-cart": {
             "error": "Kurven kunne ikke indlæses fra live shopping"
         }

@@ -1,46 +1,46 @@
 {
-    "name": "elisa/live-shopping-integration",
-    "description": "Integration between Elisa Live Shopping and Shopware",
+    "name": "sprii/live-shopping-integration",
+    "description": "Integration between Sprii Live Shopping and Shopware",
     "type": "shopware-platform-plugin",
     "license": "proprietary",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "authors": [
         {
-            "name": "Easy Live Sales ApS",
-            "homepage": "https://www.elisa.io/"
+            "name": "Sprii ApS",
+            "homepage": "https://www.sprii.io/"
         }
     ],
     "autoload": {
         "psr-4": {
-            "Elisa\\LiveShoppingIntegration\\": "src/"
+            "Sprii\\LiveShoppingIntegration\\": "src/"
         }
     },
     "require": {
         "shopware/core": "*"
     },
     "extra": {
-        "shopware-plugin-class": "Elisa\\LiveShoppingIntegration\\ElisaLiveShoppingIntegration",
+        "shopware-plugin-class": "Sprii\\LiveShoppingIntegration\\SpriiLiveShoppingIntegration",
         "plugin-icon": "src/Resources/config/plugin.png",
-        "copyright": "(c) by Easy Live Sales ApS",
+        "copyright": "(c) by Sprii ApS",
         "label": {
-            "da-DK": "Elisa Live Shopping",
-            "en-GB": "Elisa Live Shopping",
-            "de-DE": "Elisa Live Shopping"
+            "da-DK": "Sprii Live Shopping",
+            "en-GB": "Sprii Live Shopping",
+            "de-DE": "Sprii Live Shopping"
         },
         "description": {
-            "da-DK": "Integration between Elisa Live Shopping and Shopware",
-            "en-GB": "Integration between Elisa Live Shopping and Shopware",
-            "de-DE": "Integration between Elisa Live Shopping and Shopware"
+            "da-DK": "Integration between Sprii Live Shopping and Shopware",
+            "en-GB": "Integration between Sprii Live Shopping and Shopware",
+            "de-DE": "Integration between Sprii Live Shopping and Shopware"
         },
         "manufacturerLink": {
-            "dk-DK": "https://www.elisa.io/",
-            "en-GB": "https://www.elisa.io/",
-            "de-DE": "https://www.elisa.io/"
+            "dk-DK": "https://www.sprii.io/",
+            "en-GB": "https://www.sprii.io/",
+            "de-DE": "https://www.sprii.io/"
         },
         "supportLink": {
-            "da-DK": "https://help.elisa.io/",
-            "en-GB": "https://help.elisa.io/",
-            "de-DE": "https://help.elisa.io/"
+            "da-DK": "https://help.sprii.io/",
+            "en-GB": "https://help.sprii.io/",
+            "de-DE": "https://help.sprii.io/"
         }
     }
 }

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Elisa\LiveShoppingIntegration\Services;
+namespace Sprii\LiveShoppingIntegration\Services;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Elisa\LiveShoppingIntegration\ElisaLiveShoppingIntegration;
+use Sprii\LiveShoppingIntegration\SpriiLiveShoppingIntegration;
 use Shopware\Core\Checkout\Cart\AbstractCartPersister;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\LineItem\LineItemCollection;
@@ -19,7 +19,7 @@ use Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-class ElisaCartService
+class SpriiCartService
 {
     protected CartService $cartService;
     protected AbstractCartPersister $cartPersister;
@@ -42,46 +42,46 @@ class ElisaCartService
     }
 
     /**
-     * Creates a new cart from Elisa and saves it in Shopware
+     * Creates a new cart from Sprii and saves it in Shopware
      *
-     * @param array $elisaProducts
-     * @param string $elisaCartId
+     * @param array $spriiProducts
+     * @param string $spriiCartId
      * @param SalesChannelContext $context
      * @return Cart
      * @throws Exception
      * @throws \Doctrine\DBAL\Driver\Exception
      */
-    public function createElisaCart(
-        array $elisaProducts,
-        string $elisaCartId,
+    public function createSpriiCart(
+        array $spriiProducts,
+        string $spriiCartId,
         SalesChannelContext $context
     ): Cart {
         $lineItems = new LineItemCollection();
 
         $cart = $this->cartService->createNew($context->getToken());
 
-        // Set the Elisa Cart ID on the Shopware cart for future reference
+        // Set the Sprii Cart ID on the Shopware cart for future reference
         $cartExtensions = $cart->getExtensions();
-        $cartExtensions[ElisaLiveShoppingIntegration::ELISA_CART_REFERENCE_ID] = $elisaCartId;
+        $cartExtensions[SpriiLiveShoppingIntegration::SPRII_CART_REFERENCE_ID] = $spriiCartId;
         $cart->setExtensions($cartExtensions);
 
-        $this->setAllowElisaPriceOnCart($context);
-        $taxIds = $this->getShopwareTaxIds($elisaProducts);
+        $this->setAllowSpriiPriceOnCart($context);
+        $taxIds = $this->getShopwareTaxIds($spriiProducts);
 
-        // Loop through products from Elisa to create valid Shopware line items
-        foreach ($elisaProducts as $elisaProduct) {
-            $productId = $elisaProduct['child_sku'] ?? $elisaProduct['sku'];
+        // Loop through products from Sprii to create valid Shopware line items
+        foreach ($spriiProducts as $spriiProduct) {
+            $productId = $spriiProduct['child_sku'] ?? $spriiProduct['sku'];
             $lineItem = $this->lineItemFactory->create($productId);
 
             // Set necessary fields on Shopware line item
             $lineItem->setStackable(true);
-            $lineItem->setQuantity($elisaProduct['qty']);
-            $lineItem->setPayloadValue(ElisaLiveShoppingIntegration::ELISA_CART_LINEITEM, true);
-            $lineItem->setPayloadValue(ElisaLiveShoppingIntegration::ELISA_SET_PRICE, false);
+            $lineItem->setQuantity($spriiProduct['qty']);
+            $lineItem->setPayloadValue(SpriiLiveShoppingIntegration::SPRII_CART_LINEITEM, true);
+            $lineItem->setPayloadValue(SpriiLiveShoppingIntegration::SPRII_SET_PRICE, false);
 
-            if (isset($elisaProduct['price'])) {
-                // Indicate that the price on this line item is set by Elisa
-                $lineItem->setPayloadValue(ElisaLiveShoppingIntegration::ELISA_SET_PRICE, true);
+            if (isset($spriiProduct['price'])) {
+                // Indicate that the price on this line item is set by Sprii
+                $lineItem->setPayloadValue(SpriiLiveShoppingIntegration::SPRII_SET_PRICE, true);
 
                 // Calculate taxes for the new line
                 $taxCalculator = new TaxCalculator();
@@ -90,25 +90,27 @@ class ElisaCartService
                 // and build tax rules from that
                 $taxRules = $context->buildTaxRules($taxIds[hex2bin($productId)]);
                 $calculatedTaxCollection = $taxCalculator->calculateGrossTaxes(
-                    $elisaProduct['price'],
+                    $spriiProduct['price'],
                     $taxRules
                 );
 
-                // Set the price supplied from Elisa
+                // Set the price supplied from Sprii
                 $lineItem->setPrice(
                     new CalculatedPrice(
-                        $elisaProduct['price'],
-                        $elisaProduct['price'] * $elisaProduct['qty'],
+                        $spriiProduct['price'],
+                        $spriiProduct['price'] * $spriiProduct['qty'],
                         $calculatedTaxCollection,
                         $taxRules,
-                        $elisaProduct['qty']
+                        $spriiProduct['qty']
                     )
                 );
-                $lineItem->setPriceDefinition(new QuantityPriceDefinition(
-                    $elisaProduct['price'],
-                    $taxRules,
-                    $elisaProduct['qty']
-                ));
+                $lineItem->setPriceDefinition(
+                    new QuantityPriceDefinition(
+                        $spriiProduct['price'],
+                        $taxRules,
+                        $spriiProduct['qty']
+                    )
+                );
 
                 $lineItem->setExtensions(["customPrice" => true]);
             }
@@ -119,26 +121,26 @@ class ElisaCartService
         $this->cartService->add($cart, $lineItems->getElements(), $context);
         $this->cartPersister->save($cart, $context);
 
-        // $this->writeElisaShopwareCartRelation($cart, $elisaCartId);
+        // $this->writeSpriiShopwareCartRelation($cart, $spriiCartId);
 
         // Add Shopware line items to the cart and save it
         return $cart;
     }
 
     /**
-     * Gets tax ids on given products from Elisa
+     * Gets tax ids on given products from Sprii
      *
-     * @param array $elisaProducts
+     * @param array $spriiProducts
      * @return array
      * @throws Exception
      * @throws \Doctrine\DBAL\Driver\Exception
      */
-    protected function getShopwareTaxIds(array $elisaProducts): array
+    protected function getShopwareTaxIds(array $spriiProducts): array
     {
         $productIds = [];
 
-        foreach ($elisaProducts as $elisaProduct) {
-            $productIds[] = Uuid::fromHexToBytes($elisaProduct['sku']);
+        foreach ($spriiProducts as $spriiProduct) {
+            $productIds[] = Uuid::fromHexToBytes($spriiProduct['sku']);
         }
 
         $taxQuery = "
@@ -157,18 +159,20 @@ class ElisaCartService
     }
 
     /**
-     * Method to allow custom prices from Elisa to be set and saved on Shopware cart
+     * Method to allow custom prices from Sprii to be set and saved on Shopware cart
      * This ensures recalculation with default prices does not happen.
      *
      * @param SalesChannelContext $context
      * @return void
      */
-    public function setAllowElisaPriceOnCart(SalesChannelContext $context): void
+    public function setAllowSpriiPriceOnCart(SalesChannelContext $context): void
     {
-        // We need to allow price overwrites to ensure Shopware doesn't recalculate Elisa prices
-        if (empty(
+        // We need to allow price overwrites to ensure Shopware doesn't recalculate Sprii prices
+        if (
+            empty(
             $context->getPermissions()[ProductCartProcessor::ALLOW_PRODUCT_PRICE_OVERWRITES]
-        )) {
+        )
+        ) {
             $context->setPermissions([
                 ProductCartProcessor::ALLOW_PRODUCT_PRICE_OVERWRITES => true
             ]);
