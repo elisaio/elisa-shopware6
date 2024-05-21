@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Elisa\LiveShoppingIntegration\Controllers;
+namespace Sprii\LiveShoppingIntegration\Controllers;
 
-use Elisa\LiveShoppingIntegration\ElisaLiveShoppingIntegration;
-use Elisa\LiveShoppingIntegration\Services\ElisaCartService;
+use Sprii\LiveShoppingIntegration\SpriiLiveShoppingIntegration;
+use Sprii\LiveShoppingIntegration\Services\SpriiCartService;
 use Exception;
 use Monolog\Logger;
 use Shopware\Core\Checkout\Cart\AbstractCartPersister;
@@ -20,10 +20,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * @Route(defaults={"_routeScope"={"storefront"}})
  */
-class ElisaCartController extends StorefrontController
+class SpriiCartController extends StorefrontController
 {
     protected CartService $cartService;
-    protected ElisaCartService $elisaCartService;
+    protected SpriiCartService $spriiCartService;
     protected AbstractCartPersister $cartPersister;
     protected TranslatorInterface $translator;
     protected Logger $logger;
@@ -31,14 +31,14 @@ class ElisaCartController extends StorefrontController
 
     public function __construct(
         CartService $cartService,
-        ElisaCartService $elisaCartService,
+        SpriiCartService $spriiCartService,
         AbstractCartPersister $cartPersister,
         TranslatorInterface $translator,
         Logger $logger,
         SalesChannelContextPersister $salesChannelContextPersister
     ) {
         $this->cartService = $cartService;
-        $this->elisaCartService = $elisaCartService;
+        $this->spriiCartService = $spriiCartService;
         $this->cartPersister = $cartPersister;
         $this->translator = $translator;
         $this->logger = $logger;
@@ -46,9 +46,9 @@ class ElisaCartController extends StorefrontController
     }
 
     /**
-     * API endpoint to create a Shopware cart from Elisa
+     * API endpoint to create a Shopware cart from Sprii
      *
-     * @Route("/elisa/cart_create",
+     * @Route("/sprii/cart_create",
      *     defaults={"csrf_protected"=false, "XmlHttpRequest"=true},
      *     methods={"POST"}
      * )
@@ -60,18 +60,18 @@ class ElisaCartController extends StorefrontController
     public function createCart(Request $request, SalesChannelContext $context): JsonApiResponse
     {
         $params = $request->get('params');
-        $elisaCartId = $request->get(ElisaLiveShoppingIntegration::ELISA_CART_REFERENCE_ID);
+        $spriiCartId = $request->get(SpriiLiveShoppingIntegration::SPRII_CART_REFERENCE_ID);
 
         try {
-            // Create an Elisa cart in Shopware
-            $cart = $this->elisaCartService->createElisaCart(
+            // Create an Sprii cart in Shopware
+            $cart = $this->spriiCartService->createSpriiCart(
                 $params['products'],
-                $elisaCartId,
+                $spriiCartId,
                 $context
             );
         } catch (Exception $e) {
             $this->logger->error(
-                "Failed creating Elisa cart in Shopware(" . $elisaCartId . ")",
+                "Failed creating Sprii cart in Shopware(" . $spriiCartId . ")",
                 [
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
@@ -80,29 +80,29 @@ class ElisaCartController extends StorefrontController
             );
 
             return new JsonApiResponse([
-                "error" => "Failed creating Elisa cart in Shopware",
-                ElisaLiveShoppingIntegration::ELISA_CART_REFERENCE_ID => $elisaCartId
+                "error" => "Failed creating Sprii cart in Shopware",
+                SpriiLiveShoppingIntegration::SPRII_CART_REFERENCE_ID => $spriiCartId
             ], 500);
         }
 
-        // Get domain url, so we can generate link and sent it back to Elisa
+        // Get domain url, so we can generate link and sent it back to Sprii
         $domain = $context->getDomainId();
         $url = $context->getSalesChannel()->getDomains()->get($domain)->getUrl();
 
         // Build response data
         $result = [
-            ElisaLiveShoppingIntegration::ELISA_CART_REFERENCE_ID =>
-                $cart->getExtensions()[ElisaLiveShoppingIntegration::ELISA_CART_REFERENCE_ID],
-            'url' => $url . '/elisa/load/' . $cart->getToken()
+            SpriiLiveShoppingIntegration::SPRII_CART_REFERENCE_ID =>
+                $cart->getExtensions()[SpriiLiveShoppingIntegration::SPRII_CART_REFERENCE_ID],
+            'url' => $url . '/sprii/load/' . $cart->getToken()
         ];
 
         return new JsonApiResponse($result, 200);
     }
 
     /**
-     * API endpoint to load an Elisa cart which has already been created
+     * API endpoint to load an Sprii cart which has already been created
      *
-     * @Route("/elisa/load/{cart_token}",
+     * @Route("/sprii/load/{cart_token}",
      *     defaults={"csrf_protected"=false, "XmlHttpRequest"=true},
      *     methods={"GET"}
      * )
@@ -114,27 +114,27 @@ class ElisaCartController extends StorefrontController
     {
         $cartToken = $request->get('cart_token');
 
-        // Ensure Shopware allows custom prices from Elisa
-        $this->elisaCartService->setAllowElisaPriceOnCart($context);
+        // Ensure Shopware allows custom prices from Sprii
+        $this->spriiCartService->setAllowSpriiPriceOnCart($context);
 
         try {
-            // Get the saved Elisa cart from Shopware
+            // Get the saved Sprii cart from Shopware
             $apiCart = $this->cartService->getCart($cartToken, $context);
             $newCart = $this->cartService->createNew($context->getToken());
 
-            // Set extensions from api cart, containing reference id from Elisa
+            // Set extensions from api cart, containing reference id from Sprii
             $newCart->setExtensions($apiCart->getExtensions());
 
             // Add the cart and lines before redirecting, to ensure user is given the correct cart
             $this->cartService->add($newCart, $apiCart->getLineItems()->getElements(), $context);
         } catch (Exception $e) {
-            $this->logger->error("Failed loading Elisa cart in Shopware (" . $cartToken . ")", [
+            $this->logger->error("Failed loading Sprii cart in Shopware (" . $cartToken . ")", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'errorType' => get_class($e)
             ]);
 
-            $this->addFlash('danger', $this->translator->trans('elisa-integration.load-cart.error'));
+            $this->addFlash('danger', $this->translator->trans('sprii-integration.load-cart.error'));
 
             return new RedirectResponse($this->generateUrl('frontend.home.page'));
         }

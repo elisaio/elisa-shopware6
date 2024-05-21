@@ -6,9 +6,9 @@
 
     <services>
         <!-- Controllers -->
-        <service id="Elisa\LiveShoppingIntegration\Controllers\ElisaCartController" public="true">
+        <service id="Sprii\LiveShoppingIntegration\Controllers\SpriiCartController" public="true">
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
-            <argument type="service" id="Elisa\LiveShoppingIntegration\Services\ElisaCartService" />
+            <argument type="service" id="Sprii\LiveShoppingIntegration\Services\SpriiCartService" />
             <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister" />
             <argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator" />
             <argument type="service" id="logger" />
@@ -20,28 +20,28 @@
         </service>
 
         <!-- Services -->
-        <service id="Elisa\LiveShoppingIntegration\Services\AbstractApiService" class="Elisa\LiveShoppingIntegration\Services\AbstractApiService" abstract="true">
+        <service id="Sprii\LiveShoppingIntegration\Services\AbstractApiService" class="Sprii\LiveShoppingIntegration\Services\AbstractApiService" abstract="true">
             <argument type="service" id="monolog.logger" />
         </service>
-        <service id="Elisa\LiveShoppingIntegration\Services\ElisaCartService">
+        <service id="Sprii\LiveShoppingIntegration\Services\SpriiCartService">
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister" />
             <argument type="service" id="Doctrine\DBAL\Connection" />
             <argument type="service" id="Shopware\Core\Content\Product\Cart\ProductLineItemFactory" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister" />
         </service>
-        <service id="Elisa\LiveShoppingIntegration\Services\ElisaOrderService" parent="Elisa\LiveShoppingIntegration\Services\AbstractApiService">
+        <service id="Sprii\LiveShoppingIntegration\Services\SpriiOrderService" parent="Sprii\LiveShoppingIntegration\Services\AbstractApiService">
         </service>
 
         <!-- Subscribers -->
-        <service id="Elisa\LiveShoppingIntegration\Subscribers\ElisaOrderSubscriber">
+        <service id="Sprii\LiveShoppingIntegration\Subscribers\SpriiOrderSubscriber">
             <tag name="kernel.event_subscriber" />
-            <argument type="service" id="Elisa\LiveShoppingIntegration\Services\ElisaOrderService" />
+            <argument type="service" id="Sprii\LiveShoppingIntegration\Services\SpriiOrderService" />
             <argument type="service" id="messenger.bus.shopware" />
         </service>
-        <service id="Elisa\LiveShoppingIntegration\Subscribers\ElisaCartSubscriber">
+        <service id="Sprii\LiveShoppingIntegration\Subscribers\SpriiCartSubscriber">
             <tag name="kernel.event_subscriber" />
-            <argument type="service" id="Elisa\LiveShoppingIntegration\Services\ElisaCartService" />
+            <argument type="service" id="Sprii\LiveShoppingIntegration\Services\SpriiCartService" />
             <argument type="service" id="monolog.logger" />
             <argument type="service" id="messenger.bus.shopware"/>
         </service>

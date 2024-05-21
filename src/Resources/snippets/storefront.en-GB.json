@@ -1,5 +1,5 @@
 {
-    "elisa-integration": {
+    "sprii-integration": {
         "load-cart": {
             "error": "Could not load the cart from live shopping"
         }

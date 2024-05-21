@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Elisa\LiveShoppingIntegration\Services;
+namespace Sprii\LiveShoppingIntegration\Services;
 
-use Elisa\LiveShoppingIntegration\ElisaLiveShoppingIntegration;
+use Sprii\LiveShoppingIntegration\SpriiLiveShoppingIntegration;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection;
 use Shopware\Core\Checkout\Order\OrderEntity;
 
-class ElisaOrderService extends AbstractApiService
+class SpriiOrderService extends AbstractApiService
 {
     /**
      * @param OrderEntity $order
@@ -20,15 +20,15 @@ class ElisaOrderService extends AbstractApiService
             $this->callApiAsync(
                 'POST',
                 '/webhook',
-                $this->buildElisaOrder($order)
+                $this->buildSpriiOrder($order)
             )->wait();
-        } catch (GuzzleException|Exception $e) {
+        } catch (GuzzleException | Exception $e) {
             $this->logger->error(
-                'Elisa: Error happened sending order update (' . $order->getOrderNumber() . ')',
+                'Sprii: Error happened sending order update (' . $order->getOrderNumber() . ')',
                 [
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
-                    'data' => json_encode($this->buildElisaOrder($order))
+                    'data' => json_encode($this->buildSpriiOrder($order))
                 ]
             );
         }
@@ -38,16 +38,16 @@ class ElisaOrderService extends AbstractApiService
      * @param OrderEntity $order
      * @return array[]
      */
-    protected function buildElisaOrder(OrderEntity $order): array
+    protected function buildSpriiOrder(OrderEntity $order): array
     {
-        $elisaCartId = $order->getCustomFields()[ElisaLiveShoppingIntegration::ELISA_CART_REFERENCE_ID];
+        $spriiCartId = $order->getCustomFields()[SpriiLiveShoppingIntegration::SPRII_CART_REFERENCE_ID];
 
         return [
             'orders' => [
                 'id' => $order->getOrderNumber(),
-                'elisa_reference' => $elisaCartId,
+                'sprii_reference' => $spriiCartId,
                 'time' => strtotime($order->getCreatedAt()->format('d')),
-                'products' => $this->buildElisaProducts($order->getLineItems())
+                'products' => $this->buildSpriiProducts($order->getLineItems())
             ]
         ];
     }
@@ -56,7 +56,7 @@ class ElisaOrderService extends AbstractApiService
      * @param OrderLineItemCollection $lineItems
      * @return array
      */
-    protected function buildElisaProducts(OrderLineItemCollection $lineItems): array
+    protected function buildSpriiProducts(OrderLineItemCollection $lineItems): array
     {
         $products = [];
 
