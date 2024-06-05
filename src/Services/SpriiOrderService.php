@@ -14,7 +14,7 @@ class SpriiOrderService extends AbstractApiService
      * @param OrderEntity $order
      * @return void
      */
-    public function sendOrderUpdate(OrderEntity $order): void
+    public function sendOrderUpdate(OrderEntity $order): bool
     {
         try {
             $this->callApiAsync(
@@ -22,6 +22,8 @@ class SpriiOrderService extends AbstractApiService
                 '/webhook',
                 $this->buildSpriiOrder($order)
             )->wait();
+
+	    return true;
         } catch (GuzzleException | Exception $e) {
             $this->logger->error(
                 'Sprii: Error happened sending order update (' . $order->getOrderNumber() . ')',
@@ -31,6 +33,8 @@ class SpriiOrderService extends AbstractApiService
                     'data' => json_encode($this->buildSpriiOrder($order))
                 ]
             );
+
+	    return false;
         }
     }
 

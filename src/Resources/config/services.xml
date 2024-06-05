@@ -37,7 +37,7 @@
         <service id="Sprii\LiveShoppingIntegration\Subscribers\SpriiOrderSubscriber">
             <tag name="kernel.event_subscriber" />
             <argument type="service" id="Sprii\LiveShoppingIntegration\Services\SpriiOrderService" />
-            <argument type="service" id="messenger.bus.shopware" />
+            <argument type="service" id="order.repository" />
         </service>
         <service id="Sprii\LiveShoppingIntegration\Subscribers\SpriiCartSubscriber">
             <tag name="kernel.event_subscriber" />
