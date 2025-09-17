@@ -156,7 +156,7 @@ class SpriiCartService
                 "productIds" => $productIds
             ],
             [
-                "productIds" => Connection::PARAM_STR_ARRAY
+                "productIds" => $this->getStringArrayParameterType()
             ]
         )->fetchAllKeyValue();
     }
@@ -191,5 +191,30 @@ class SpriiCartService
                 $context->getSalesChannelId()
             );
         }
+    }
+
+    /**
+     * Get the appropriate string array parameter type for the current Doctrine DBAL version
+     * Supports both legacy (6.6.x) and modern (6.7+) parameter types
+     *
+     * @return mixed
+     */
+    private function getStringArrayParameterType()
+    {
+        // Check if the new ArrayParameterType enum exists (Doctrine DBAL 4.0+)
+        if (function_exists('enum_exists') && enum_exists('Doctrine\DBAL\ArrayParameterType')) {
+            // Use the STRING case from the enum dynamically
+            $arrayParameterType = 'Doctrine\DBAL\ArrayParameterType';
+            return $arrayParameterType::STRING;
+        }
+
+        // Fallback to legacy constant for older versions
+        // Use constant() to avoid static analysis errors
+        if (defined('Doctrine\DBAL\Connection::PARAM_STR_ARRAY')) {
+            return constant('Doctrine\DBAL\Connection::PARAM_STR_ARRAY');
+        }
+
+        // Last fallback - use the known constant value
+        return 101; // This was the value of PARAM_STR_ARRAY
     }
 }
