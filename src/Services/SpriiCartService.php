@@ -13,7 +13,7 @@ use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Cart\Tax\TaxCalculator;
 use Shopware\Core\Content\Product\Cart\ProductCartProcessor;
-use Shopware\Core\Content\Product\Cart\ProductLineItemFactory;
+use Shopware\Core\Checkout\Cart\LineItemFactoryHandler\ProductLineItemFactory;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
@@ -71,11 +71,14 @@ class SpriiCartService
         // Loop through products from Sprii to create valid Shopware line items
         foreach ($spriiProducts as $spriiProduct) {
             $productId = $spriiProduct['child_sku'] ?? $spriiProduct['sku'];
-            $lineItem = $this->lineItemFactory->create($productId);
+            $lineItem = $this->lineItemFactory->create([
+                'id' => $productId,
+                'referencedId' => $productId,
+                'quantity' => $spriiProduct['qty']
+            ], $context);
 
             // Set necessary fields on Shopware line item
             $lineItem->setStackable(true);
-            $lineItem->setQuantity($spriiProduct['qty']);
             $lineItem->setPayloadValue(SpriiLiveShoppingIntegration::SPRII_CART_LINEITEM, true);
             $lineItem->setPayloadValue(SpriiLiveShoppingIntegration::SPRII_SET_PRICE, false);
 

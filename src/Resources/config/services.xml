@@ -27,7 +27,7 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister" />
             <argument type="service" id="Doctrine\DBAL\Connection" />
-            <argument type="service" id="Shopware\Core\Content\Product\Cart\ProductLineItemFactory" />
+            <argument type="service" id="Shopware\Core\Checkout\Cart\LineItemFactoryHandler\ProductLineItemFactory" />
             <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister" />
         </service>
         <service id="Sprii\LiveShoppingIntegration\Services\SpriiOrderService" parent="Sprii\LiveShoppingIntegration\Services\AbstractApiService">

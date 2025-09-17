@@ -53,54 +53,114 @@ class SpriiLiveShoppingIntegration extends Plugin
     public function createOrUpdateCustomFieldSet(InstallContext|UpdateContext $context): void
     {
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
+        $customFieldRepository = $this->container->get('custom_field.repository');
 
-        // Use upsert to safely create or update without data loss
-        // This preserves existing custom field data while updating definitions
-        $customFieldSetRepository->upsert([
-            [
-                'name' => self::SPRII_ORDER_FIELDS,
-                'customFields' => [
-                    [
-                        'name' => self::SPRII_CART_REFERENCE_ID,
-                        'type' => CustomFieldTypes::TEXT,
-                        'config' => [
-                            'label' => [
-                                'da-DK' => 'Sprii Kurv ID',
-                                'de-DE' => 'Sprii Warenkorb ID',
-                                'en-GB' => 'Sprii Cart ID'
-                            ],
-                            'customFieldType' => 'text',
-                            'customFieldPosition' => 1,
+        // First, check if custom field set already exists
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', self::SPRII_ORDER_FIELDS));
+        $criteria->addAssociation('customFields');
+        $existingFieldSet = $customFieldSetRepository->search($criteria, $context->getContext())->first();
+
+        if ($existingFieldSet) {
+            // Update existing custom field set
+            $customFieldSetRepository->update([
+                [
+                    'id' => $existingFieldSet->getId(),
+                    'config' => [
+                        'label' => [
+                            'da-DK' => 'Sprii Live Shopping',
+                            'de-DE' => 'Sprii Live Shopping',
+                            'en-GB' => 'Sprii Live Shopping'
+                        ]
+                    ]
+                ]
+            ], $context->getContext());
+
+            // Update or create individual custom fields
+            $this->createOrUpdateCustomFields($customFieldRepository, $existingFieldSet->getId(), $context->getContext());
+        } else {
+            // Create new custom field set
+            $customFieldSetRepository->create([
+                [
+                    'name' => self::SPRII_ORDER_FIELDS,
+                    'config' => [
+                        'label' => [
+                            'da-DK' => 'Sprii Live Shopping',
+                            'de-DE' => 'Sprii Live Shopping',
+                            'en-GB' => 'Sprii Live Shopping'
                         ]
                     ],
-                    [
-                        'name' => self::SPRII_CART_EXPORTED,
-                        'type' => CustomFieldTypes::BOOL,
-                        'config' => [
-                            'label' => [
-                                'da-DK' => 'Sprii Ordre eksporteret',
-                                'de-DE' => 'Sprii Bestellung exportiert',
-                                'en-GB' => 'Sprii Order Exported'
-                            ],
-                            'customFieldType' => 'bool',
-                            'customFieldPosition' => 2,
+                    'relations' => [
+                        [
+                            'entityName' => 'order',
                         ]
-                    ]
-                ],
+                    ],
+                ]
+            ], $context->getContext());
+
+            // Get the newly created field set
+            $criteria = new Criteria();
+            $criteria->addFilter(new EqualsFilter('name', self::SPRII_ORDER_FIELDS));
+            $newFieldSet = $customFieldSetRepository->search($criteria, $context->getContext())->first();
+
+            if ($newFieldSet) {
+                $this->createOrUpdateCustomFields($customFieldRepository, $newFieldSet->getId(), $context->getContext());
+            }
+        }
+    }
+
+    private function createOrUpdateCustomFields($customFieldRepository, string $customFieldSetId, Context $context): void
+    {
+        $fieldsToCreate = [
+            [
+                'name' => self::SPRII_CART_REFERENCE_ID,
+                'type' => CustomFieldTypes::TEXT,
+                'customFieldSetId' => $customFieldSetId,
                 'config' => [
                     'label' => [
-                        'da-DK' => 'Sprii Live Shopping',
-                        'de-DE' => 'Sprii Live Shopping',
-                        'en-GB' => 'Sprii Live Shopping'
-                    ]
-                ],
-                'relations' => [
-                    [
-                        'entityName' => 'order',
-                    ]
-                ],
+                        'da-DK' => 'Sprii Kurv ID',
+                        'de-DE' => 'Sprii Warenkorb ID',
+                        'en-GB' => 'Sprii Cart ID'
+                    ],
+                    'customFieldType' => 'text',
+                    'customFieldPosition' => 1,
+                ]
+            ],
+            [
+                'name' => self::SPRII_CART_EXPORTED,
+                'type' => CustomFieldTypes::BOOL,
+                'customFieldSetId' => $customFieldSetId,
+                'config' => [
+                    'label' => [
+                        'da-DK' => 'Sprii Ordre eksporteret',
+                        'de-DE' => 'Sprii Bestellung exportiert',
+                        'en-GB' => 'Sprii Order Exported'
+                    ],
+                    'customFieldType' => 'bool',
+                    'customFieldPosition' => 2,
+                ]
             ]
-        ], $context->getContext());
+        ];
+
+        foreach ($fieldsToCreate as $fieldData) {
+            // Check if custom field already exists
+            $criteria = new Criteria();
+            $criteria->addFilter(new EqualsFilter('name', $fieldData['name']));
+            $existingField = $customFieldRepository->search($criteria, $context)->first();
+
+            if ($existingField) {
+                // Update existing field
+                $customFieldRepository->update([
+                    [
+                        'id' => $existingField->getId(),
+                        'config' => $fieldData['config']
+                    ]
+                ], $context);
+            } else {
+                // Create new field
+                $customFieldRepository->create([$fieldData], $context);
+            }
+        }
     }
 
     /**

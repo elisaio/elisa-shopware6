@@ -16,7 +16,7 @@
         }
     },
     "require": {
-        "shopware/core": "*"
+        "shopware/core": ">=6.6.10 <7.0.0"
     },
     "extra": {
         "shopware-plugin-class": "Sprii\\LiveShoppingIntegration\\SpriiLiveShoppingIntegration",

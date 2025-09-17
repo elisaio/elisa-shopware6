@@ -12,7 +12,7 @@ class SpriiOrderService extends AbstractApiService
 {
     /**
      * @param OrderEntity $order
-     * @return void
+     * @return bool
      */
     public function sendOrderUpdate(OrderEntity $order): bool
     {
