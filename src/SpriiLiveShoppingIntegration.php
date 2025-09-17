@@ -23,30 +23,39 @@ class SpriiLiveShoppingIntegration extends Plugin
     public function install(InstallContext $installContext): void
     {
         parent::install($installContext);
-
-        $this->removeExistingCustomFields($installContext->getContext());
-        $this->createCustomFieldSet($installContext);
+        
+        // Only create/update custom field sets without removing existing data
+        $this->createOrUpdateCustomFieldSet($installContext);
     }
 
     public function update(UpdateContext $updateContext): void
     {
         parent::update($updateContext);
-
-        $this->removeExistingCustomFields($updateContext->getContext());
-        $this->createCustomFieldSet($updateContext);
+        
+        // During updates, preserve existing data and only update field definitions
+        $this->createOrUpdateCustomFieldSet($updateContext);
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
     {
         parent::uninstall($uninstallContext);
 
-        $this->removeExistingCustomFields($uninstallContext->getContext());
+        // Check if user wants to keep data (Shopware's built-in data retention setting)
+        if ($uninstallContext->keepUserData()) {
+            // Keep everything - custom fields and data are preserved
+            return;
+        }
+        
+        // If user chose to remove data, remove custom field set (this will delete the data too)
+        $this->removeCustomFieldSetAndData($uninstallContext->getContext());
     }
 
-    public function createCustomFieldSet(InstallContext|UpdateContext $context): void
+    public function createOrUpdateCustomFieldSet(InstallContext|UpdateContext $context): void
     {
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
 
+        // Use upsert to safely create or update without data loss
+        // This preserves existing custom field data while updating definitions
         $customFieldSetRepository->upsert([
             [
                 'name' => self::SPRII_ORDER_FIELDS,
@@ -94,11 +103,16 @@ class SpriiLiveShoppingIntegration extends Plugin
         ], $context->getContext());
     }
 
-    public function removeExistingCustomFields(Context $context): void
+    /**
+     * Remove custom field set and all associated data
+     * WARNING: This will delete all custom field data from orders
+     */
+    public function removeCustomFieldSetAndData(Context $context): void
     {
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
         $customFieldRepository = $this->container->get('custom_field.repository');
 
+        // First, remove the custom field set
         $criteria = new Criteria();
         $criteria->addFilter(
             new EqualsFilter('custom_field_set.name', self::SPRII_ORDER_FIELDS)
@@ -110,6 +124,7 @@ class SpriiLiveShoppingIntegration extends Plugin
             $customFieldSetRepository->delete([["id" => $key]], $context);
         }
 
+        // Then, explicitly remove any orphaned custom fields
         $criteria = new Criteria();
         $criteria->addFilter(
             new EqualsAnyFilter(
@@ -124,4 +139,6 @@ class SpriiLiveShoppingIntegration extends Plugin
             $customFieldRepository->delete([["id" => $key]], $context);
         }
     }
+
+
 }
