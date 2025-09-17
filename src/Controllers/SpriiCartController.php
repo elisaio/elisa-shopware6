@@ -14,12 +14,10 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-/**
- * @Route(defaults={"_routeScope"={"storefront"}})
- */
+#[Route(defaults: ["_routeScope" => ["storefront"]])]
 class SpriiCartController extends StorefrontController
 {
     protected CartService $cartService;
@@ -48,15 +46,16 @@ class SpriiCartController extends StorefrontController
     /**
      * API endpoint to create a Shopware cart from Sprii
      *
-     * @Route("/sprii/cart_create",
-     *     defaults={"csrf_protected"=false, "XmlHttpRequest"=true},
-     *     methods={"POST"}
-     * )
      * @param Request $request
      * @param SalesChannelContext $context
      * @return JsonApiResponse
      * @throws \Doctrine\DBAL\Driver\Exception
      */
+    #[Route(
+        path: "/sprii/cart_create",
+        defaults: ["csrf_protected" => false, "XmlHttpRequest" => true],
+        methods: ["POST"]
+    )]
     public function createCart(Request $request, SalesChannelContext $context): JsonApiResponse
     {
         $params = $request->get('params');
@@ -102,14 +101,15 @@ class SpriiCartController extends StorefrontController
     /**
      * API endpoint to load an Sprii cart which has already been created
      *
-     * @Route("/sprii/load/{cart_token}",
-     *     defaults={"csrf_protected"=false, "XmlHttpRequest"=true},
-     *     methods={"GET"}
-     * )
      * @param Request $request
      * @param SalesChannelContext $context
      * @return RedirectResponse
      */
+    #[Route(
+        path: "/sprii/load/{cart_token}",
+        defaults: ["csrf_protected" => false, "XmlHttpRequest" => true],
+        methods: ["GET"]
+    )]
     public function loadCart(Request $request, SalesChannelContext $context): RedirectResponse
     {
         $cartToken = $request->get('cart_token');

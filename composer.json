@@ -3,7 +3,7 @@
     "description": "Integration between Sprii Live Shopping and Shopware",
     "type": "shopware-platform-plugin",
     "license": "proprietary",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "authors": [
         {
             "name": "Sprii ApS",
@@ -16,7 +16,7 @@
         }
     },
     "require": {
-        "shopware/core": "*"
+        "shopware/core": ">=6.6.10 <6.8.0"
     },
     "extra": {
         "shopware-plugin-class": "Sprii\\LiveShoppingIntegration\\SpriiLiveShoppingIntegration",
